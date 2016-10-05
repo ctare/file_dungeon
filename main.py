@@ -40,7 +40,7 @@ class GameMap:
 
     def map_init(self, filename):
         with open(filename) as file_data:
-            map_data = ["{{:{}<{}}}".format(block["space"], self.width).format(line[:-1]) for line in file_data]
+            map_data = [line[:-1] for line in file_data]
         if self.height > len(map_data):
             map_data = ["" for x in range(self.height - len(map_data))] + map_data
 
@@ -160,9 +160,12 @@ class MessageBar:
 
     def __str__(self):
         percentage = self.player.x / (self.game_map.size_x - 1) * 100
-        view = "point: {} {:.1f}% |".format(self.player.point, percentage)
-        progress_bar_len = TERM_X - len(view) - 1
-        view += "{{:{}}}".format(progress_bar_len).format("#" * int(percentage * progress_bar_len // 100)) + "|"
+        view = "point: {} {:.1f}% ".format(self.player.point, percentage)
+        if percentage < 100:
+            progress_bar_len = TERM_X - len(view) - 3
+            view += "|{{:{}}}".format(progress_bar_len).format("#" * int(percentage * progress_bar_len // 100)) + "|"
+        else:
+            view += "Game clear!!"
         return "{{:{}}}".format(TERM_X).format(view)
 
 mb = MessageBar(None, None)
