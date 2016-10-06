@@ -2,35 +2,29 @@
 import threading
 import time
 import os
+from parts.blocks import *
 TERM_SIZE = os.get_terminal_size()
 TERM_X = TERM_SIZE.columns
 TERM_Y = TERM_SIZE.lines - 1
 
-block = dict(
-        wall="#",
-        point="*",
-        space=" ",
-        )
+Wall.register("#")
+Point.register("*").anim("O", "|").magnification(3)
+Space.register(" ")
 
 class GameMap:
-    def __init__(self, message_bar, width, height, filename=None):
+    def __init__(self, message_bar, width, height, filename):
         self.message_bar = message_bar
         self.origin_x = 0
         self.origin_y = 0
         self.width = width
         self.height = height - 1
-        if filename == None:
-            self.mapping = [[block["space"] for x in range(self.width)] for y in range(self.height)]
-            self.size_x = self.width
-            self.size_y = self.height
-        else:
-            self.mapping, self.size_x, self.size_y = self.map_init(filename)
+        self.mapping, self.size_x, self.size_y = self.map_init(filename)
 
     def set(self, x, y, val):
         self.mapping[y][x] = val
 
     def get(self, x, y):
-        if x < 0 or self.size_x <= x or y < 0 or self.size_y <= y: return block["wall"]
+        if x < 0 or self.size_x <= x or y < 0 or self.size_y <= y: return Wall
         return self.mapping[y][x]
 
     def draw(self):
@@ -46,7 +40,12 @@ class GameMap:
 
         origin_x = max([len(x) for x in map_data]) + 2
         for index, line in enumerate(map_data):
-            map_data[index] = list("{{:{}<{}}}".format(block["space"], origin_x).format(line))
+            map_data[index] = list("{{:{}<{}}}".format(str(Space.symbol), origin_x).format(line))
+
+        for y, line in enumerate(map_data):
+            for x, cell in enumerate(line):
+                map_data[y][x] = create_block(cell)
+
 
         return map_data, origin_x - 1, len(map_data)
 
@@ -91,18 +90,18 @@ class Player:
         self.x += x
         self.y += y
         now = self.game_map.get(self.x, self.y)
-        if now == block["wall"]:
+        if now == Wall:
             self.x -= x
             self.y -= y
-        elif now == block["point"]:
+        elif now == Point:
             self.point += 1
         self.game_map.set(self.x, self.y, self)
 
     def jump(self, high):
-        if self.get_bottom() == block["wall"]:
+        if self.get_bottom() == Wall:
             self.ariel = False
             def j(thread):
-                if thread.count >= high or self.get_top() == block["wall"]:
+                if thread.count >= high or self.get_top() == Wall:
                     self.ariel = True
                     thread.exit()
                 self.move(0, -1)
@@ -125,7 +124,7 @@ class GameThread(threading.Thread):
     def run(self):
         while self.not_end:
             self.draw()
-            time.sleep(0.1)
+            time.sleep(frame_speed)
             if self.player.x < self.game_map.origin_x or self.game_map.size_x <= self.game_map.origin_x:
                 exit()
 
@@ -183,6 +182,7 @@ def frame(self):
     if p1.ariel: p1.move(0, 1)
 
 player_speed = 0.1
+frame_speed = 0.05
 timeThread = TimerThread(player_speed, frame)
 game = GameThread(mp, p1)
 timeThread.start()
