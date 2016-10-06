@@ -99,7 +99,7 @@ class Player:
         self.game_map.set(self.x, self.y, self)
 
     def jump(self, high):
-        if self.get_bottom() == block["wall"]:
+        if self.get_bottom() == block["wall"] and self.ariel:
             self.ariel = False
             def j(thread):
                 if thread.count >= high or self.get_top() == block["wall"]:
