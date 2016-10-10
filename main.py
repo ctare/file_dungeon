@@ -2,6 +2,15 @@
 import threading
 import time
 import os
+import sys
+import termios
+fd = sys.stdin.fileno()
+old_setting = termios.tcgetattr(fd)
+new_setting = termios.tcgetattr(fd)
+new_setting[3] &= ~termios.ICANON
+new_setting[3] &= ~termios.ECHO
+termios.tcsetattr(fd, termios.TCSANOW, new_setting)
+
 TERM_SIZE = os.get_terminal_size()
 TERM_X = TERM_SIZE.columns
 TERM_Y = TERM_SIZE.lines - 1
@@ -152,8 +161,6 @@ class TimerThread(threading.Thread):
     def exit(self):
         self.not_end = False
 
-import sys
-
 class MessageBar:
     def __init__(self, player, game_map):
         self.player = player
@@ -189,6 +196,7 @@ timeThread.start()
 game.start()
 
 def exit():
+    termios.tcsetattr(fd, termios.TCSANOW, old_setting)
     game.exit()
     timeThread.exit()
     sys.exit("bye.")
