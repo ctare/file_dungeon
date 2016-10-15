@@ -3,16 +3,10 @@
 
 class Thread{
   public:
-    virtual void start() final{
-      this -> thread = std::thread(&Thread::run, this);
-    };
+    virtual void start() final;
     virtual void run()=0;
-    virtual void join() final{
-      this -> thread.join();
-    };
-    virtual void exit() final{
-      this -> isRun = false;
-    };
+    virtual void join() final;
+    virtual void exit() final;
     bool isRun = true;
 
   private:
@@ -21,13 +15,13 @@ class Thread{
 
 class TimerThread : public Thread{
   public:
-    TimerThread(int interval, void (*fnc)(TimerThread *timer_thread));
+    TimerThread(int interval, void *(TimerThread*));
     virtual void run();
 };
 
 class GameThread : public Thread{
   public:
-    GameThread(class GameMap *game_map, class Player *player);
+    GameThread(class GameMap*, class Player*);
     virtual void run();
     void draw();
 };
