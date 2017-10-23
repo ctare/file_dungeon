@@ -249,6 +249,9 @@ int main(int argc, char* argv[]) {
       player.x += 1;
     }
 
+    if(player_speed.y > 0 && get_block(lines, cols, map_2d, &player, TOP) == '#') {
+      player_speed.y = -1;
+    }
     if(player_speed.y > 0) {
       player_speed.y--;
       player.y--;
